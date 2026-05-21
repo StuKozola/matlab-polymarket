@@ -1,0 +1,11 @@
+.env
+*.asv
+*.m~
+release/
+build/
+logs/
+data/
+*.zip
+*.mat
+!tests/fixtures/**/*.mat
+
