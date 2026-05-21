@@ -27,6 +27,18 @@ opts.Description = [ ...
     "toolbox packaging support."];
 opts.OutputFile = outputFile;
 opts.ToolboxMatlabPath = fullfile(repoRoot, "src");
+opts.ToolboxFiles = [
+    fullfile(repoRoot, "src")
+    fullfile(repoRoot, "doc")
+    fullfile(repoRoot, "examples")
+    fullfile(repoRoot, "README.md")
+    fullfile(repoRoot, "LICENSE")
+    fullfile(repoRoot, ".env.example")
+    ];
+if isfile(jarFile)
+    opts.ToolboxFiles(end + 1) = jarFile;
+    opts.ToolboxJavaPath = jarFile;
+end
 
 gettingStarted = fullfile(repoRoot, "doc", "GettingStarted.m");
 if isfile(gettingStarted)

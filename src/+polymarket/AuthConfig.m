@@ -137,17 +137,81 @@ classdef AuthConfig
     end
 
     methods (Static)
-        function obj = fromEnvironment()
-            %FROMENVIRONMENT Create AuthConfig from POLY_* environment variables.
+        function obj = fromEnvironment(options)
+            %FROMENVIRONMENT Create AuthConfig from environment, .env, and Vault.
+            %   Environment variables take precedence over .env values, which
+            %   take precedence over MATLAB Vault secrets with the same names.
+            arguments
+                options.DotEnvFile string = ".env"
+                options.UseEnvironment logical = true
+                options.UseDotEnv logical = true
+                options.UseVault logical = true
+                options.VaultPrefix string = ""
+                options.SecretProvider = []
+            end
+
+            dotenv = containers.Map("KeyType", "char", "ValueType", "char");
+            if options.UseDotEnv && strlength(options.DotEnvFile) > 0
+                dotenv = polymarket.internal.loadDotEnv(options.DotEnvFile);
+            end
+
+            provider = options.SecretProvider;
+            if isempty(provider) && options.UseVault
+                provider = @(name) polymarket.internal.getVaultSecret(options.VaultPrefix + string(name));
+            end
+
             obj = polymarket.AuthConfig( ...
-                "Address", string(getenv("POLY_ADDRESS")), ...
-                "ApiKey", string(getenv("POLY_API_KEY")), ...
-                "Secret", string(getenv("POLY_SECRET")), ...
-                "Passphrase", string(getenv("POLY_PASSPHRASE")), ...
-                "PrivateKey", string(getenv("POLY_PRIVATE_KEY")), ...
-                "SignatureType", polymarket.internal.envOrDefault("POLY_SIGNATURE_TYPE", "POLY_1271"), ...
-                "Funder", string(getenv("POLY_FUNDER")));
+                "Address", readCredential("POLY_ADDRESS", ""), ...
+                "ApiKey", readCredential("POLY_API_KEY", ""), ...
+                "Secret", readCredential("POLY_SECRET", ""), ...
+                "Passphrase", readCredential("POLY_PASSPHRASE", ""), ...
+                "PrivateKey", readCredential("POLY_PRIVATE_KEY", ""), ...
+                "SignatureType", readCredential("POLY_SIGNATURE_TYPE", "POLY_1271"), ...
+                "Funder", readCredential("POLY_FUNDER", ""));
+
+            function value = readCredential(name, defaultValue)
+                if options.UseEnvironment
+                    value = string(getenv(name));
+                    if strlength(value) > 0
+                        return
+                    end
+                end
+                if isKey(dotenv, name)
+                    value = string(dotenv(char(name)));
+                    if strlength(value) > 0
+                        return
+                    end
+                end
+                if ~isempty(provider)
+                    value = string(provider(name));
+                    if strlength(value) > 0
+                        return
+                    end
+                end
+                value = string(defaultValue);
+            end
+        end
+
+        function obj = fromDotEnv(fileName)
+            %FROMDOTENV Create AuthConfig from a .env file only.
+            arguments
+                fileName string = ".env"
+            end
+            obj = polymarket.AuthConfig.fromEnvironment( ...
+                "DotEnvFile", fileName, "UseEnvironment", false, ...
+                "UseDotEnv", true, "UseVault", false);
+        end
+
+        function obj = fromVault(options)
+            %FROMVAULT Create AuthConfig from MATLAB Vault secrets only.
+            arguments
+                options.VaultPrefix string = ""
+                options.SecretProvider = []
+            end
+            obj = polymarket.AuthConfig.fromEnvironment( ...
+                "UseEnvironment", false, "UseDotEnv", false, "UseVault", true, ...
+                "VaultPrefix", options.VaultPrefix, ...
+                "SecretProvider", options.SecretProvider);
         end
     end
 end
-

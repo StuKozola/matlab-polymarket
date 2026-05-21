@@ -21,21 +21,40 @@ serverTime = clob.getTime();
 disp(serverTime);
 
 %% Authenticated requests
-% Configure credentials as environment variables:
+% Configure credentials as environment variables, a local .env file, or
+% MATLAB Vault secrets. The same names are used by all sources:
 %
 % POLY_ADDRESS, POLY_API_KEY, POLY_SECRET, POLY_PASSPHRASE
 %
-% Then create an authenticated client:
+% Then create an authenticated client. Source precedence is environment,
+% .env, then MATLAB Vault:
 auth = polymarket.AuthConfig.fromEnvironment();
 if auth.hasL2Credentials()
     privateClob = polymarket.ClobClient("Auth", auth);
     disp(privateClob.getOrders());
 end
 
+%% MATLAB Vault
+% Store secrets interactively:
+%
+%   setSecret("POLY_API_KEY")
+%   setSecret("POLY_SECRET")
+%   setSecret("POLY_PASSPHRASE")
+%
+% Then load them:
+%
+%   auth = polymarket.AuthConfig.fromVault();
+
 %% Signing callbacks
 % L1 API-key creation and order signing are extension points. Set
 % AuthConfig.L1Signer or AuthConfig.OrderSigner to a function handle that
 % accepts the payload struct and returns the signature or signed order.
+%
+% For full EIP-712 signing through the official SDK, install
+% py_clob_client_v2 in MATLAB's Python environment and use:
+%
+%   sdk = polymarket.PythonClobSdk("Auth", auth);
+%   creds = sdk.createOrDeriveApiKey();
 
 %% WebSockets
 % Build the Java helper once before using WebSockets:

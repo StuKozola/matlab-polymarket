@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2024b
+      - uses: matlab-actions/run-build@v2
+        with:
+          tasks: test check package
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/Polymarket.mltbx
+          generate_release_notes: true
+

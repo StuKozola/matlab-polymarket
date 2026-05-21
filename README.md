@@ -19,7 +19,8 @@ clob = polymarket.ClobClient();
 serverTime = clob.getTime();
 ```
 
-Authenticated CLOB calls use environment variables by default:
+Authenticated CLOB calls can use environment variables, a local `.env` file,
+or MATLAB Vault secrets. The same names are used for all three sources:
 
 ```text
 POLY_ADDRESS
@@ -36,9 +37,27 @@ clob = polymarket.ClobClient("Auth", auth);
 orders = clob.getOrders();
 ```
 
-L2 API-key authentication is implemented in MATLAB. L1 API-key creation and
-order signing require an explicit signer callback on `AuthConfig` so private-key
-handling can stay outside the toolbox boundary unless a project opts in.
+Source precedence is environment variables, `.env`, then MATLAB Vault. Store
+Vault secrets with names such as `POLY_API_KEY` and retrieve them with:
+
+```matlab
+auth = polymarket.AuthConfig.fromVault();
+```
+
+Create a `.env` file from `.env.example` for local development:
+
+```matlab
+auth = polymarket.AuthConfig.fromDotEnv(".env");
+```
+
+L2 API-key authentication is implemented in MATLAB. For EIP-712 signing,
+either set `AuthConfig.L1Signer`/`AuthConfig.OrderSigner` callbacks or install
+the official Python SDK and use the optional bridge:
+
+```matlab
+sdk = polymarket.PythonClobSdk("Auth", auth);
+creds = sdk.createOrDeriveApiKey();
+```
 
 WebSockets require a Java helper JAR:
 
@@ -46,7 +65,8 @@ WebSockets require a Java helper JAR:
 run("tools/buildJavaHelper.m")
 ```
 
-That script requires a JDK with `javac` and `jar` on PATH.
+That script requires a JDK with `javac` and `jar` on PATH, or tool paths in
+`POLYMARKET_JAVAC` and `POLYMARKET_JAR`.
 
 ## Package
 
@@ -58,6 +78,12 @@ run("tools/packageToolbox.m")
 
 The package is written to `release/Polymarket.mltbx`.
 
+The build tool provides the same automation:
+
+```matlab
+buildtool test check package
+```
+
 ## Verify
 
 ```matlab
@@ -68,3 +94,10 @@ checkcode("src","-cyc")
 
 Network and credentialed examples are skipped unless the required environment
 variables are configured.
+
+Live integration tests are skipped by default:
+
+```matlab
+setenv("POLYMARKET_RUN_INTEGRATION", "true")
+buildtool integration
+```

@@ -46,5 +46,11 @@ classdef testInternalHelpers < matlab.unittest.TestCase
             testCase.verifyEqual(string(message.event_type), "book");
             testCase.verifyEqual(string(message.asset_id), "123");
         end
+
+        function pythonSdkAvailabilityReturnsLogical(testCase)
+            available = polymarket.PythonClobSdk.isAvailable();
+
+            testCase.verifyClass(available, "logical");
+        end
     end
 end
