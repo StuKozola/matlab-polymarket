@@ -1,0 +1,19 @@
+{
+  "market": "0xmarket",
+  "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+  "timestamp": "1700000000",
+  "hash": "0xhash",
+  "bids": [
+    {"price": "0.45", "size": "100"},
+    {"price": "0.44", "size": "50"}
+  ],
+  "asks": [
+    {"price": "0.46", "size": "75"},
+    {"price": "0.47", "size": "125"}
+  ],
+  "min_order_size": "1",
+  "tick_size": "0.01",
+  "neg_risk": false,
+  "last_trade_price": "0.45"
+}
+

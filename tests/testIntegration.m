@@ -65,4 +65,3 @@ function tf = localWebSocketTestsEnabled()
 tf = strcmpi(getenv("POLYMARKET_RUN_WEBSOCKET_TESTS"), "true") || ...
     strcmp(getenv("POLYMARKET_RUN_WEBSOCKET_TESTS"), "1");
 end
-

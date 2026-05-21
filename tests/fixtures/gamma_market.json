@@ -1,0 +1,11 @@
+{
+  "id": "123",
+  "slug": "example-market",
+  "question": "Will the example resolve yes?",
+  "conditionId": "0xcondition",
+  "active": true,
+  "closed": false,
+  "clobTokenIds": "[\"1111111111111111111111111111111111111111111111111111111111111111\",\"2222222222222222222222222222222222222222222222222222222222222222\"]",
+  "outcomes": "[\"Yes\",\"No\"]"
+}
+

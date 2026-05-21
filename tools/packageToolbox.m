@@ -5,7 +5,7 @@
 repoRoot = fileparts(fileparts(mfilename("fullpath")));
 toolboxUUID = "2b386b46-196f-4c98-9fa8-f1554ed9fa80";
 toolboxName = "Polymarket";
-toolboxVersion = "0.1.0";
+toolboxVersion = "0.1.1";
 outputFile = fullfile(repoRoot, "release", "Polymarket.mltbx");
 
 jarFile = fullfile(repoRoot, "lib", "polymarket-java-helper.jar");
@@ -31,6 +31,7 @@ opts.ToolboxFiles = [
     fullfile(repoRoot, "src")
     fullfile(repoRoot, "doc")
     fullfile(repoRoot, "examples")
+    fullfile(repoRoot, "tools")
     fullfile(repoRoot, "README.md")
     fullfile(repoRoot, "LICENSE")
     fullfile(repoRoot, ".env.example")

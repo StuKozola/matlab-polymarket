@@ -39,6 +39,14 @@ results = runner.run(suite);
 assertSuccess(results);
 end
 
+function tradingTask(~)
+addpath("src");
+suite = testsuite("tests", Tag="Trading");
+runner = matlab.unittest.TestRunner.withTextOutput;
+results = runner.run(suite);
+assertSuccess(results);
+end
+
 function javaTask(~)
 run("tools/buildJavaHelper.m");
 end

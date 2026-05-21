@@ -84,6 +84,10 @@ The build tool provides the same automation:
 buildtool test check package
 ```
 
+Use `examples/fullMarketFlow.m` for a complete public data flow:
+market discovery, CLOB token extraction, order book conversion, and midpoint
+lookup.
+
 ## Verify
 
 ```matlab
@@ -101,3 +105,22 @@ Live integration tests are skipped by default:
 setenv("POLYMARKET_RUN_INTEGRATION", "true")
 buildtool integration
 ```
+
+Trading E2E is a separate explicit opt-in. It uses the official Python SDK
+bridge for EIP-712 signing, posts a post-only tiny limit order, and cancels it:
+
+```matlab
+run("tools/installPythonSdk.m")
+setenv("POLYMARKET_RUN_INTEGRATION", "true")
+setenv("POLYMARKET_RUN_TRADING_E2E", "true")
+setenv("POLYMARKET_TRADING_TOKEN_ID", "<token id>")
+setenv("POLYMARKET_TRADING_PRICE", "0.01")
+setenv("POLYMARKET_TRADING_SIZE", "1")
+setenv("POLYMARKET_TRADING_MAX_NOTIONAL", "1")
+buildtool trading
+```
+
+See `doc/SigningStrategy.m` and `doc/LiveTesting.m` for details.
+
+For GitHub Actions live runs, configure the same names as repository secrets
+and start the `CI` workflow manually with `run-integration=true`.

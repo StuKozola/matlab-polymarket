@@ -20,6 +20,15 @@ clob = polymarket.ClobClient();
 serverTime = clob.getTime();
 disp(serverTime);
 
+%% Market tables and token IDs
+marketSummary = polymarket.marketTable(markets);
+disp(marketSummary);
+tokenIds = polymarket.extractClobTokenIds(markets);
+if ~isempty(tokenIds)
+    book = clob.getBook(tokenIds(1));
+    disp(polymarket.orderBookTables(book));
+end
+
 %% Authenticated requests
 % Configure credentials as environment variables, a local .env file, or
 % MATLAB Vault secrets. The same names are used by all sources:

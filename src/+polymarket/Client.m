@@ -6,7 +6,7 @@ classdef Client < handle
         Auth = []
         Timeout double = 30
         MaxRetries double = 2
-        UserAgent string = "matlab-polymarket/0.1.0"
+        UserAgent string = "matlab-polymarket/0.1.1"
         ReturnTables logical = false
     end
 
@@ -17,7 +17,7 @@ classdef Client < handle
                 options.Auth = []
                 options.Timeout double = 30
                 options.MaxRetries double = 2
-                options.UserAgent string = "matlab-polymarket/0.1.0"
+                options.UserAgent string = "matlab-polymarket/0.1.1"
                 options.ReturnTables logical = false
             end
 

@@ -28,10 +28,11 @@ classdef PythonClobSdk < handle
         function credentials = createOrDeriveApiKey(obj)
             %CREATEORDERIVEAPIKEY Create or derive CLOB API credentials.
             response = obj.Client.create_or_derive_api_key();
+            data = polymarket.internal.pythonToMatlab(response);
             credentials = struct( ...
-                "apiKey", obj.getField(response, ["apiKey", "api_key"]), ...
-                "secret", obj.getField(response, ["secret", "api_secret"]), ...
-                "passphrase", obj.getField(response, ["passphrase", "api_passphrase"]));
+                "apiKey", obj.getField(data, ["apiKey", "api_key"]), ...
+                "secret", obj.getField(data, ["secret", "api_secret"]), ...
+                "passphrase", obj.getField(data, ["passphrase", "api_passphrase"]));
         end
 
         function response = createAndPostLimitOrder(obj, tokenId, price, size, side, options)
@@ -44,21 +45,31 @@ classdef PythonClobSdk < handle
                 side string {mustBeMember(side, ["BUY", "SELL"])}
                 options.TickSize string = "0.01"
                 options.OrderType string = "GTC"
+                options.PostOnly logical = true
+                options.DeferExec logical = false
             end
 
             sideValue = py.getattr(obj.Module.Side, char(upper(side)));
             orderTypeValue = py.getattr(obj.Module.OrderType, char(upper(options.OrderType)));
-            orderArgs = obj.Module.OrderArgs(pyargs( ...
+            orderArgsClass = obj.orderArgsClass();
+            orderArgs = orderArgsClass(pyargs( ...
                 "token_id", char(tokenId), ...
                 "price", price, ...
                 "side", sideValue, ...
                 "size", size));
             createOptions = obj.Module.PartialCreateOrderOptions(pyargs( ...
                 "tick_size", char(options.TickSize)));
-            response = obj.Client.create_and_post_order(pyargs( ...
+            response = polymarket.internal.pythonToMatlab(obj.Client.create_and_post_order(pyargs( ...
                 "order_args", orderArgs, ...
                 "options", createOptions, ...
-                "order_type", orderTypeValue));
+                "order_type", orderTypeValue, ...
+                "post_only", options.PostOnly, ...
+                "defer_exec", options.DeferExec)));
+        end
+
+        function orderId = extractOrderId(~, response)
+            %EXTRACTORDERID Extract order ID from an SDK response.
+            orderId = polymarket.internal.extractOrderId(response);
         end
     end
 
@@ -89,7 +100,7 @@ classdef PythonClobSdk < handle
 
             extendedArgs = [args, {"signature_type", int64(obj.Auth.SignatureType)}];
             if strlength(obj.Auth.Funder) > 0
-                extendedArgs = [extendedArgs, {"funder_address", char(obj.Auth.Funder)}];
+                extendedArgs = [extendedArgs, {"funder", char(obj.Auth.Funder)}];
             end
 
             try
@@ -99,23 +110,23 @@ classdef PythonClobSdk < handle
             end
         end
 
+        function orderArgs = orderArgsClass(obj)
+            try
+                orderArgs = obj.Module.OrderArgs;
+            catch
+                orderArgs = obj.Module.OrderArgsV2;
+            end
+        end
+
         function value = getField(~, response, names)
             value = "";
             for i = 1:numel(names)
                 name = char(names(i));
-                try
-                    value = string(py.getattr(response, name));
+                if isstruct(response) && isfield(response, name)
+                    value = string(response.(name));
                     if strlength(value) > 0
                         return
                     end
-                catch
-                end
-                try
-                    value = string(response{name});
-                    if strlength(value) > 0
-                        return
-                    end
-                catch
                 end
             end
         end
@@ -133,4 +144,3 @@ classdef PythonClobSdk < handle
         end
     end
 end
-
